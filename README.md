@@ -56,7 +56,7 @@ Reinicie a sessão. Na primeira vez em cada pasta de projeto o Claude oferece ro
 
 ## Testes
 
-`node tests/teste.mjs` (44 verificações, com casos que devem falhar) e `node tests/prova-powershell.mjs`.
+`node tests/teste.mjs` (45 verificações, com casos que devem falhar) e `node tests/prova-powershell.mjs`.
 
 ## Licença
 
