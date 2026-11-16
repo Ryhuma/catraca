@@ -42,11 +42,16 @@ export const CONFIG_PADRAO = {
   versao: 1,
   descricao: "Configuracao da catraca. 'neutros': regex (sem diferenciar maiusculas) de comandos que NUNCA geram divida. 'mcpEscrita': regex de nomes de ferramentas MCP que alteram coisas (cada uso vira divida). 'tentativasStop': quantas vezes o fim da sessao e barrado com divida aberta.",
   neutros: NEUTROS_PADRAO,
+  neutrosExtra: [],
   mcpEscrita: [],
   tentativasStop: 6,
   instalarEstilo: true,
 };
-export const lerConfig = (P) => ({ ...CONFIG_PADRAO, ...lerJson(P.config, {}) });
+// 'neutros' presente no config SUBSTITUI a lista padrao; 'neutrosExtra' SOMA a ela (o jeito recomendado de calibrar).
+export const lerConfig = (P) => {
+  const c = { ...CONFIG_PADRAO, ...lerJson(P.config, {}) };
+  return { ...c, neutros: [...c.neutros, ...(c.neutrosExtra ?? [])] };
+};
 
 // Divide um comando de shell em segmentos (separadores && || ; | e quebra de linha) SEM cortar dentro de aspas
 // e ignorando o corpo de heredoc. Heuristica declarada: shell e uma linguagem grande.

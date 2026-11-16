@@ -35,6 +35,17 @@ t("init cria config, receitas, scripts, estado", r.status === 0 && ["config.json
 r = hook("sessionstart", {});
 t("sessionstart ativo informa CLI e livro vazio", r.stdout.includes("CATRACA ATIVA") && r.stdout.includes("Livro vazio"), r.stdout);
 
+console.log("calibracao");
+t("antes de calibrar, 'dotnet --info' gera divida", bash("dotnet --info").stdout.includes("divida #1"));
+require_reset();
+const cfgArq = path.join(proj, ".claude/catraca/config.json");
+const cfg = JSON.parse(fs.readFileSync(cfgArq, "utf8"));
+t("config criado pelo init NAO congela a lista padrao de neutros", cfg.neutros === undefined && Array.isArray(cfg.neutrosExtra));
+cfg.neutrosExtra = ["^dotnet\\s+--info"]; fs.writeFileSync(cfgArq, JSON.stringify(cfg));
+t("neutrosExtra torna o comando neutro (sem divida)", bash("dotnet --info").status === 0 && !fs.existsSync(path.join(proj, ".claude/catraca/estado/livro.json")));
+t("neutrosExtra SOMA: git continua neutro", bash("git status").status === 0 && !fs.existsSync(path.join(proj, ".claude/catraca/estado/livro.json")));
+cfg.neutrosExtra = []; fs.writeFileSync(cfgArq, JSON.stringify(cfg));
+
 console.log("deteccao");
 t("pipeline de leitura (Get-ChildItem | Sort-Object) nao gera divida", bash("Get-ChildItem . | Sort-Object Length | Select-Object -First 3").status === 0 && !fs.existsSync(path.join(proj, ".claude/catraca/estado/livro.json")));
 t("ls | grep e redirecionamento de erro nao geram divida", bash("ls -la 2>&1 | grep a").status === 0 && !fs.existsSync(path.join(proj, ".claude/catraca/estado/livro.json")));
@@ -107,6 +118,10 @@ for (let i = 0; i < 6; i++) r = hook("stop", {});
 t("depois do teto de tentativas o usuario nao fica preso", r.stdout.trim() === "");
 r = cli("descartar", "--ids", "3", "--motivo", "so para o teste do descarte");
 t("usuario descarta com motivo", r.status === 0 && cli("status").stdout.includes("abertas: 0"));
+
+bash("docker ps");
+cfg.tentativasStop = 0; fs.writeFileSync(cfgArq, JSON.stringify(cfg));
+t("tentativasStop=0 desliga o bloqueio do fim da sessao", hook("stop", { session_id: "s-zero" }).stdout.trim() === "");
 
 console.log("falha aberta");
 r = spawnSync(process.execPath, [HOOK, "pretool"], { input: "isto nao e json", encoding: "utf8", env });

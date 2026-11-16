@@ -22,7 +22,7 @@ function ids(texto, livro) {
 
 function init() {
   fs.mkdirSync(P.receitas, { recursive: true }); fs.mkdirSync(P.scripts, { recursive: true }); fs.mkdirSync(P.estado, { recursive: true });
-  if (!fs.existsSync(P.config)) gravarJson(P.config, CONFIG_PADRAO);
+  if (!fs.existsSync(P.config)) gravarJson(P.config, { ...CONFIG_PADRAO, neutros: undefined });   // sem 'neutros': a lista padrao vem do plugin e melhora com as atualizacoes
   fs.writeFileSync(path.join(P.estado, ".gitignore"), "*\n!.gitignore\n", "utf8");
   console.log(`Catraca iniciada em ${path.relative(P.proj, P.base) || P.base}. Receitas: .claude/catraca/receitas. Scripts de apoio: .claude/catraca/scripts. Estado local (nao vai ao git): .claude/catraca/estado.`);
 }
