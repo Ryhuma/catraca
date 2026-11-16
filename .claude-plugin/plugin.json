@@ -1,0 +1,19 @@
+{
+  "name": "catraca",
+  "version": "1.0.0",
+  "description": "Todo trabalho manual do Claude vira divida no livro e so fecha com receita nova ou upgrade de receita: a automacao nasce sozinha enquanto voce trabalha.",
+  "author": {
+    "name": "Ryhuma"
+  },
+  "homepage": "https://github.com/Ryhuma/catraca",
+  "repository": "https://github.com/Ryhuma/catraca",
+  "license": "MIT",
+  "keywords": [
+    "automacao",
+    "receitas",
+    "hooks",
+    "windows",
+    "toil",
+    "runbook"
+  ]
+}

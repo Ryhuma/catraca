@@ -1,0 +1,70 @@
+# Tutorial de instalação e uso
+
+## 1. Pré-requisitos
+- Claude Code instalado e logado.
+- Node 18 ou superior: abra um terminal e rode `node --version`. Se não existir, instale em nodejs.org.
+- Windows, macOS ou Linux (o exercício guiado é para Windows).
+
+## 2. Instalar o plugin
+Dentro do Claude Code:
+
+```
+/plugin marketplace add Ryhuma/catraca
+/plugin install catraca@catraca
+```
+
+Depois **feche e abra a sessão**. Confira com `/plugin`: `catraca` deve aparecer como instalado e habilitado.
+
+## 3. Ativar em um projeto
+Abra o Claude Code na pasta do seu projeto. No início da sessão o Claude oferece, em uma linha, rodar `/catraca:iniciar`. Aceite (ou digite o comando).
+
+Isso cria:
+
+```
+.claude/catraca/
+  config.json     ajustes (lista de comandos neutros, tentativas do Stop, estilo)
+  receitas/       as receitas (JSON). Vale a pena versionar no git.
+  scripts/        scripts de apoio das receitas
+  estado/         livro de dívidas e provas (local, ignorado pelo git)
+```
+
+Confira com `status` pedindo ao Claude: "mostre o status da catraca".
+
+## 4. Usar (você só pede; o resto é automático)
+1. Peça tarefas normalmente.
+2. Se o Claude precisar executar algo à mão, o livro ganha uma dívida e ele a resolve na mesma sessão (catálogo, decisão, receita, execução, fechamento).
+3. No fim ele diz qual receita nasceu ou foi atualizada e como rodá-la.
+4. Na próxima vez que a tarefa aparecer, ele usa a receita.
+
+Se o Claude tentar encerrar com dívida aberta, o hook `Stop` o devolve ao trabalho (até 6 vezes).
+
+## 5. Estilo Silencioso
+Na primeira sessão o plugin copia `silencioso.md` para `~/.claude/output-styles/`. Ative com `/output-style` e escolha **Silencioso**. Ele elimina a narração entre ferramentas: o Claude trabalha em silêncio e entrega uma mensagem final com resultado, pendências e prova.
+
+## 6. Ajustes (`.claude/catraca/config.json`)
+- `neutros`: expressões regulares de comandos que **nunca** geram dívida. Adicione as suas (ex.: `"^dotnet\\s+--info"`).
+- `mcpEscrita`: nomes de ferramentas MCP que alteram coisas (cada uso vira dívida), ex.: `"^mcp__meuservidor__(criar|apagar).*"`.
+- `tentativasStop`: quantas vezes o fim da sessão é barrado.
+- `instalarEstilo`: `false` para não copiar o estilo Silencioso.
+
+## 7. Descartar uma dívida (só você)
+Se uma dívida não deve virar receita (comando único, sem repetição):
+
+```
+! node "<caminho do plugin>/scripts/catraca.mjs" descartar --ids 3 --motivo "comando único, não se repete"
+```
+
+O caminho exato do CLI aparece no contexto que o Claude recebe a cada sessão; peça "qual o comando para descartar a dívida 3?".
+
+## 8. Problemas comuns
+| Sintoma | Causa provável | Solução |
+|---|---|---|
+| Claude não oferece iniciar | plugin não carregou | reinicie a sessão; confira `/plugin` |
+| "projeto nao iniciado" | falta `/catraca:iniciar` | rode-o na pasta do projeto |
+| Dívida aparece para comando que é só leitura | comando fora da lista `neutros` | adicione uma regex em `config.json` |
+| `fechar` recusa: "nunca rodou com sucesso" | receita não foi executada depois da última edição | rode `rodar <receita>` e feche de novo |
+| Sessão não termina | dívida aberta | peça ao Claude para resolver ou descarte você mesmo (item 7) |
+| Erro com `node` | Node ausente ou fora do PATH | instale Node 18+ e reabra o terminal |
+
+## 9. Desinstalar
+`/plugin uninstall catraca@catraca`. Seus arquivos em `.claude/catraca/receitas` continuam seus.

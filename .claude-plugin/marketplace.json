@@ -1,0 +1,14 @@
+{
+  "name": "catraca",
+  "owner": {
+    "name": "Ryhuma"
+  },
+  "plugins": [
+    {
+      "name": "catraca",
+      "source": "./",
+      "description": "Automacao por catraca: trabalho manual vira divida e so fecha com receita ou upgrade."
+    }
+  ],
+  "description": "Catraca: trabalho manual do Claude vira divida e so fecha com receita ou upgrade."
+}
