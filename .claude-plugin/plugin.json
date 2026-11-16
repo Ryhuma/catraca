@@ -1,7 +1,7 @@
 {
   "name": "catraca",
-  "version": "1.0.0",
-  "description": "Todo trabalho manual do Claude vira divida no livro e so fecha com receita nova ou upgrade de receita: a automacao nasce sozinha enquanto voce trabalha.",
+  "version": "2.0.0",
+  "description": "Todo trabalho manual do Claude vira divida no livro e so fecha com receita provada: o executor .ps1 ganha as primitivas e as receitas .json as sequenciam. A automacao nasce sozinha enquanto voce trabalha.",
   "author": {
     "name": "Ryhuma"
   },

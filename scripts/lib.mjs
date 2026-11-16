@@ -15,11 +15,12 @@ export const caminhos = (proj) => {
     config: path.join(base, "config.json"),
     receitas: path.join(base, "receitas"),
     scripts: path.join(base, "scripts"),
+    executor: path.join(base, "executor"),
     estado: path.join(base, "estado"),
     livro: path.join(base, "estado", "livro.json"),
     catalogo: path.join(base, "estado", "catalogo.json"),
     decisao: path.join(base, "estado", "decisao.json"),
-    execucoes: path.join(base, "estado", "execucoes.json"),
+    execucoes: path.join(base, "estado", "execucoes.jsonl"),
     stop: path.join(base, "estado", "stop.json"),
   };
 };
@@ -43,6 +44,10 @@ export const CONFIG_PADRAO = {
   descricao: "Configuracao da catraca. 'neutros': regex (sem diferenciar maiusculas) de comandos que NUNCA geram divida. 'mcpEscrita': regex de nomes de ferramentas MCP que alteram coisas (cada uso vira divida). 'tentativasStop': quantas vezes o fim da sessao e barrado com divida aberta.",
   neutros: NEUTROS_PADRAO,
   neutrosExtra: [],
+  executor: {
+    script: ".claude/catraca/executor/executar-no-windows.ps1",
+    neutros: "^(Status|Receita|Param|Aplicar|Ler\\w*|Listar\\w*|Consultar\\w*|Ver\\w*|Ajuda)$",
+  },
   mcpEscrita: [],
   tentativasStop: 6,
   instalarEstilo: true,
@@ -50,7 +55,7 @@ export const CONFIG_PADRAO = {
 // 'neutros' presente no config SUBSTITUI a lista padrao; 'neutrosExtra' SOMA a ela (o jeito recomendado de calibrar).
 export const lerConfig = (P) => {
   const c = { ...CONFIG_PADRAO, ...lerJson(P.config, {}) };
-  return { ...c, neutros: [...c.neutros, ...(c.neutrosExtra ?? [])] };
+  return { ...c, executor: { ...CONFIG_PADRAO.executor, ...(c.executor ?? {}) }, neutros: [...c.neutros, ...(c.neutrosExtra ?? [])] };
 };
 
 // Divide um comando de shell em segmentos (separadores && || ; | e quebra de linha) SEM cortar dentro de aspas
@@ -117,9 +122,21 @@ export function atualizarLivro(P, fn) { const livro = lerLivro(P); fn(livro); gr
 export const listarReceitas = (P) => (fs.existsSync(P.receitas) ? fs.readdirSync(P.receitas) : []).filter((f) => f.endsWith(".json")).map((f) => {
   const j = lerJson(path.join(P.receitas, f), {});
   const passos = Array.isArray(j.passos) ? j.passos : [];
-  const sigs = [...new Set(passos.map((p) => (p.comando ? assinatura(p.comando) : p.arquivo ? `script:${p.arquivo}` : "")).filter(Boolean))];
+  const sigs = [...new Set(passos.filter((p) => Array.isArray(p.executar) && typeof p.executar[0] === "string").map((p) => p.executar[0]))];
   return { arquivo: f, nome: j.nome ?? f.replace(/\.json$/, ""), descricao: j.descricao ?? "", sinonimos: Array.isArray(j.sinonimos) ? j.sinonimos.join(", ") : "", params: Object.keys(j.parametros ?? {}), sigs, naoDuplica: j.naoDuplica ?? null };
 });
+// Primitivas do executor: parametros do param(...) e as linhas "#@primitiva Nome - descricao" (convencao documentada no modelo).
+export function lerExecutor(P, cfg) {
+  const arq = path.join(P.proj, cfg.executor.script);
+  if (!fs.existsSync(arq)) return { arq, existe: false, params: [], docs: {} };
+  const txt = fs.readFileSync(arq, "utf8");
+  const bloco = (/^param\s*\(([\s\S]*?)\r?\n\)/m.exec(txt) ?? [])[1] ?? "";
+  const params = [...bloco.matchAll(/\$([A-Za-z_]\w*)/g)].map((m) => m[1]);
+  const docs = {};
+  for (const m of txt.matchAll(/^\s*#@primitiva\s+(\w+)\s*-\s*(.+)$/gm)) docs[m[1]] = m[2].trim();
+  return { arq, existe: true, params, docs };
+}
+export const lerExecucoes = (P) => { try { return fs.readFileSync(P.execucoes, "utf8").split(/\r?\n/).map((l) => l.replace(/^﻿/, "").trim()).filter(Boolean).flatMap((l) => { try { return [JSON.parse(l)]; } catch { return []; } }); } catch { return []; } };   // o PowerShell 5.1 grava BOM na 1a linha
 export const listarScripts = (P) => (fs.existsSync(P.scripts) ? fs.readdirSync(P.scripts) : []);
 export const marcarCatalogo = (P) => gravarJson(P.catalogo, { ts: new Date().toISOString() });
 export const catalogoFresco = (P) => { const c = lerJson(P.catalogo, null); return !!c && Date.now() - Date.parse(c.ts) < 90 * 60 * 1000; };

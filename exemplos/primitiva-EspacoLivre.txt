@@ -1,0 +1,26 @@
+Exemplo do que o Claude acrescenta ao executor para resolver a divida do exercicio (espaco livre dos discos).
+Sao DUAS mudancas em .claude/catraca/executor/executar-no-windows.ps1:
+
+1) No param(...), ANTES de "#@PARAMS-FIM" (virgula depois do parametro anterior):
+
+  [switch]$Aplicar,
+  [switch]$EspacoLivre,
+  [int]$LimitePct = 100
+  #@PARAMS-FIM
+
+2) Antes de "#@PRIMITIVAS-FIM", o bloco da primitiva (leitura: nao precisa de -Aplicar):
+
+#@primitiva EspacoLivre - lista o espaco livre de cada disco local; -LimitePct N mostra so os com ate N% livre
+if ($EspacoLivre) {
+  Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' |
+    Select-Object DeviceID,
+      @{n='LivreGB';e={[math]::Round($_.FreeSpace/1GB,1)}},
+      @{n='TotalGB';e={[math]::Round($_.Size/1GB,1)}},
+      @{n='LivrePct';e={[math]::Round(100*$_.FreeSpace/$_.Size,0)}} |
+    Where-Object { $_.LivrePct -le $LimitePct } |
+    Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+  exit 0
+}
+
+Depois: receita exemplos/espaco-livre-discos.json em .claude/catraca/receitas/ e
+  node <CLI> rodar espaco-livre-discos            (e com limitePct=50)

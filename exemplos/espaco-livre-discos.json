@@ -2,11 +2,9 @@
   "nome": "espaco-livre-discos",
   "descricao": "Mostra o espaco livre de cada disco local; limitePct mostra so discos com ate N% livre (exemplo do exercicio)",
   "sinonimos": ["quanto sobrou nos discos", "espaco em disco", "capacidade dos drives"],
-  "parametros": { "limitePct": { "padrao": "100" } },
+  "parametros": { "limitePct": "100" },
   "passos": [
-    {
-      "tipo": "powershell",
-      "comando": "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | Select-Object DeviceID, @{n='LivreGB';e={[math]::Round($_.FreeSpace/1GB,1)}}, @{n='TotalGB';e={[math]::Round($_.Size/1GB,1)}}, @{n='LivrePct';e={[math]::Round(100*$_.FreeSpace/$_.Size,0)}} | Where-Object { $_.LivrePct -le {{limitePct}} } | Format-Table -AutoSize | Out-String -Width 200"
-    }
+    { "mostrar": "Discos locais com ate {$limitePct}% livre:" },
+    { "executar": ["-EspacoLivre", "-LimitePct", "{$limitePct}"] }
   ]
 }

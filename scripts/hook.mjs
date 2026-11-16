@@ -59,6 +59,17 @@ function preTool() {
     const novas = [];
     for (const seg of segmentos(cmd)) {
       if (ehCatraca(seg)) continue;
+      const exeBase = path.basename(cfg.executor.script);
+      if (seg.toLowerCase().includes(exeBase.toLowerCase())) {
+        // Chamada ao EXECUTOR: com -Receita e uso normal; primitiva solta (nao neutra) fora de receita = divida de calibracao.
+        if (/>|Set-Content|Add-Content|Out-File|\bsed\s+-i|\btee\b|Remove-Item|\brm\b|\bmv\b|Move-Item|Copy-Item/i.test(seg)) bloquear("o executor da catraca so e alterado com Write/Edit (depois do catalogo e da decisao), nao pelo shell.");
+        const params = [...seg.matchAll(/(?:^|\s)-([A-Za-z]\w*)/g)].map((m) => m[1]).filter((p) => !/^(noprofile|noninteractive|executionpolicy|file|command|nologo|windowstyle)$/i.test(p));
+        if (params.some((p) => /^receita$/i.test(p))) continue;
+        const reNeutro = new RegExp(cfg.executor.neutros, "i");
+        const agentes = params.filter((p) => !reNeutro.test(p));
+        if (agentes.length) novas.push(registrarDivida(P, { tipo: "primitiva", assinatura: "-" + agentes[0], resumo: seg.slice(0, 160) }));
+        continue;
+      }
       if (/\.claude[\\/]catraca[\\/](receitas|scripts)/i.test(seg) && (!ehNeutro(seg, cfg) || />/.test(seg))) bloquear("crie ou edite receitas e scripts da catraca com Write/Edit (que passam pelo catalogo e pela decisao), nao pelo shell.");
       if (ehNeutro(seg, cfg)) continue;
       novas.push(registrarDivida(P, { tipo: "manual", assinatura: assinaturaDe(seg, cfg), resumo: seg.slice(0, 160) }));
@@ -76,13 +87,13 @@ function preTool() {
     const rel = relativo(P, ti.file_path ?? ti.notebook_path);
     if (!rel) return;
     if (rel.startsWith(".claude/catraca/estado/")) bloquear("o estado da catraca so e alterado pelo CLI.");
-    if (!/^\.claude\/catraca\/(receitas|scripts)\//.test(rel)) return;
+    if (!/^\.claude\/catraca\/(receitas|scripts|executor)\//.test(rel)) return;
     if (!catalogoFresco(P)) bloquear(`antes de criar ou editar receita/script, leia o catalogo: ${CLI} catalogo (vale 90 min). Existe uma receita que ja faz isto? Entao e UPGRADE dela.`);
     if (abertas(P).length) {
       const dec = lerJson(P.decisao, null);
       if (!dec) bloquear(`ha dividas abertas e nenhuma decisao: rode ${CLI} decidir --ids <ids> (--upgrade <receita> | --nova <nome> --motivo "...").`);
-      const ok = rel === dec.arquivo || rel.startsWith(".claude/catraca/scripts/");
-      if (!ok) bloquear(`com divida aberta so e permitido editar o arquivo decidido (${dec.arquivo}) ou scripts de apoio em .claude/catraca/scripts/. Para outra receita, rode decidir de novo.`);
+      const ok = rel === dec.arquivo || rel === cfg.executor.script || rel.startsWith(".claude/catraca/scripts/");
+      if (!ok) bloquear(`com divida aberta so e permitido editar o arquivo decidido (${dec.arquivo}), o executor (${cfg.executor.script}) ou scripts de apoio em .claude/catraca/scripts/. Para outra receita, rode decidir de novo.`);
     }
   }
 }
