@@ -60,7 +60,7 @@ A catraca vem ajustada para o caso geral. O seu trabalho tem comandos próprios,
 5. **Muitas dívidas pequenas parecidas:** sinal de que uma receita com parâmetros resolve todas; peça ao Claude para fazer o upgrade.
 
 **O que mais é seu para mudar:**
-- **As receitas** (`.claude/catraca/receitas/*.json`) e os scripts de apoio: edite à vontade. Para mudar uma receita, peça ao Claude: ele registra o upgrade e prova que ainda roda.
+- **As receitas** (`.claude/catraca/receitas/*.json`) e os scripts de apoio: edite à vontade. Toda receita precisa de `descricao` (20+ caracteres, em linguagem comum): é ela que o Claude lê no catálogo para reconhecer que uma tarefa nova já está coberta. O campo opcional `sinonimos` ajuda quando você pede a mesma coisa de formas diferentes. Para mudar uma receita, peça ao Claude: ele registra o upgrade e prova que ainda roda.
 - **O estilo Silencioso** (`~/.claude/output-styles/silencioso.md`): é um arquivo de texto seu depois de copiado. Edite as regras, ou escolha outro estilo em `/output-style`.
 - **O protocolo que o Claude segue** está em `skills/catraca/SKILL.md` dentro do plugin. Mudanças ali se perdem na atualização do plugin. Para ajustes duradouros, faça um fork do repositório e instale o seu.
 - **Regras do hook** (o que bloqueia): estão em `scripts/hook.mjs`, também só por fork.

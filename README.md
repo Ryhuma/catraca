@@ -21,7 +21,7 @@ próxima vez: Claude chama a receita (sem dívida)
 | Barreira | Como |
 |---|---|
 | Trabalho manual vira dívida | hook `PreToolUse` em Bash/PowerShell (leitura, navegação e `git` são neutros) |
-| Não duplicar receita | `catalogo` obrigatório antes de criar; `--nova` é recusada se existir candidata parecida |
+| Não duplicar receita | `catalogo` obrigatório antes de criar; mostra cada dívida ao lado da descrição e dos sinônimos das receitas, para o Claude julgar; `--nova` é recusada se existir candidata parecida |
 | Só fecha com prova | receita precisa ter rodado com sucesso **depois** da última alteração |
 | Não terminar com dívida | hook `Stop` barra o fim da sessão (teto de 6 tentativas: nunca prende você) |
 | Claude não se auto-absolve | descartar dívida é só do usuário (`!` no terminal); estado do livro é protegido |
@@ -56,7 +56,7 @@ Reinicie a sessão. Na primeira vez em cada pasta de projeto o Claude oferece ro
 
 ## Testes
 
-`node tests/teste.mjs` (45 verificações, com casos que devem falhar) e `node tests/prova-powershell.mjs`.
+`node tests/teste.mjs` (47 verificações, com casos que devem falhar) e `node tests/prova-powershell.mjs`.
 
 ## Licença
 

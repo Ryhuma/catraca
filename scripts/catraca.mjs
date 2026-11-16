@@ -52,7 +52,8 @@ function catalogo() {
   exigirAtivo();
   const rec = listarReceitas(P);
   const uso = lerJson(P.execucoes, []);
-  for (const r of rec) console.log(`${r.nome}${r.descricao ? ` - ${r.descricao}` : ""}\n  params: ${r.params.join(", ") || "-"}\n  comandos: ${r.sigs.join(", ") || "-"}\n  usos ok: ${uso.filter((u) => u.receita === r.nome && u.ok).length}`);
+  comparacao(rec, abertas(P));
+  for (const r of rec) console.log(`  usos ok de ${r.nome}: ${uso.filter((u) => u.receita === r.nome && u.ok).length}`);
   const sc = listarScripts(P);
   console.log(`\nreceitas: ${rec.length} | scripts de apoio: ${sc.length}${sc.length ? ` (${sc.join(", ")})` : ""}`);
   marcarCatalogo(P);
@@ -61,6 +62,17 @@ function catalogo() {
     if (f) { console.log(`\n${f} par(es) sobreposto(s) sem "naoDuplica": uma receita deve ser UPGRADE da outra, ou ambas declaram por que sao distintas.`); process.exit(1); }
     console.log("Nenhum par sobreposto sem declaracao.");
   }
+}
+
+// Opcao A (15 nov 2026): quem julga "essa receita ja cobre esta divida?" e o Claude, entao ele recebe as DIVIDAS e as receitas
+// (descricao, sinonimos, comandos) lado a lado. Medido: comparar so palavras acerta 0/6; o julgamento semantico fica com o Claude.
+function comparacao(rec, dividas) {
+  if (dividas.length) {
+    console.log("DIVIDAS EM ABERTO (o que foi executado a mao):");
+    for (const d of dividas) console.log(`  #${d.id} ${d.tipo} x${d.n} | ${(d.exemplos ?? [d.resumo]).join("  ||  ")}`);
+    console.log("\nRECEITAS EXISTENTES (alguma ja faz o mesmo trabalho, mesmo com outro comando? entao e UPGRADE):");
+  }
+  for (const r of rec) console.log(`${r.nome}${r.descricao ? ` - ${r.descricao}` : " - (SEM descricao: peca upgrade para descrever)"}\n  tambem conhecida como: ${r.sinonimos || "-"}\n  params: ${r.params.join(", ") || "-"} | comandos: ${r.sigs.join(", ") || "-"}`);
 }
 
 function decidir() {
@@ -72,7 +84,7 @@ function decidir() {
   const up = arg("--upgrade"), nova = arg("--nova"), motivo = arg("--motivo");
   if (!!up === !!nova) falhar('informe exatamente um: --upgrade <receita>  ou  --nova <nome> --motivo "..."');
   const rec = listarReceitas(P);
-  for (const r of rec) console.log(`${r.nome}${r.descricao ? ` - ${r.descricao}` : ""}\n  params: ${r.params.join(", ") || "-"} | comandos: ${r.sigs.join(", ") || "-"}`);
+  comparacao(rec, ab.filter((i) => alvo.includes(i.id)));
   const dec = { ts: new Date().toISOString(), ids: alvo, tipo: up ? "upgrade" : "nova" };
   if (up) {
     const r = rec.find((x) => x.nome === up || x.arquivo === up || x.arquivo === `${up}.json`);
@@ -163,6 +175,7 @@ function fechar() {
   if (!rec) falhar(`JSON invalido em ${rel}.`);
   const nome = path.basename(rel, ".json");
   if (rec.nome !== nome) falhar(`o campo "nome" da receita deve ser "${nome}".`);
+  if (typeof rec.descricao !== "string" || rec.descricao.trim().length < 20) falhar('"descricao" obrigatoria (20+ caracteres): diga o que a receita faz em linguagem comum, para o catalogo mostrar ao Claude. Opcional: "sinonimos": ["outras formas de pedir"].');
   if (!Array.isArray(rec.passos) || !rec.passos.length || rec.passos.some((p) => !p.tipo || !(p.comando || p.arquivo))) falhar('"passos" precisa ser lista nao vazia, cada passo com "tipo" e ("comando" ou "arquivo").');
   const execs = lerJson(P.execucoes, []);
   if (!execs.some((u) => u.receita === nome && u.ok && Date.parse(u.ts) >= mtime)) falhar(`a receita nunca rodou com sucesso DEPOIS da ultima alteracao. Prove: rodar ${nome} [chave=valor ...]`);

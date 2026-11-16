@@ -14,7 +14,7 @@ O caminho do CLI vem no contexto da sessao ("CLI: node ..."). Abaixo, `CLI` sign
 2. So execute a mao o que nenhuma receita cobre.
 
 ## Quando houver divida (hook avisa; o fim da sessao fica barrado ate zerar)
-1. `CLI catalogo` (obrigatorio antes de criar ou editar receita).
+1. `CLI catalogo` (obrigatorio antes de criar ou editar receita). Ele mostra as DIVIDAS abertas ao lado de cada receita (descricao, sinonimos, comandos). **Voce faz o julgamento semantico**: a mesma tarefa pode vir com outro comando (`wmic`, `Get-PSDrive` e `df` para espaco em disco). Medido: comparar so palavras acerta 0 de 6; entao leia a descricao e decida com criterio, nao pelo nome do comando.
 2. Decida e declare, comparando com a lista:
    - **Upgrade**: `CLI decidir --ids 1,2 --upgrade <receita>` quando uma receita existente deveria cobrir o caso (novo parametro, passo extra).
    - **Nova**: `CLI decidir --ids 1 --nova <nome-com-hifens> --motivo "por que nenhuma receita serve (20+ caracteres)"`. Recusa se achar candidata parecida; se for realmente distinta, nomeie-a em `--distinta-de`.
@@ -26,7 +26,8 @@ O caminho do CLI vem no contexto da sessao ("CLI: node ..."). Abaixo, `CLI` sign
 ```json
 {
   "nome": "<igual ao nome do arquivo>",
-  "descricao": "o que faz, em uma frase",
+  "descricao": "o que faz, em linguagem comum (OBRIGATORIA, 20+ caracteres: e o que voce le no catalogo para reconhecer a receita)",
+  "sinonimos": ["outras formas de pedir a mesma coisa", "opcional"],
   "parametros": { "pasta": { "padrao": "." } },
   "passos": [
     { "tipo": "powershell", "comando": "Get-ChildItem -LiteralPath '{{pasta}}' | Sort-Object Length -Descending | Select-Object -First 5 Name,Length" }

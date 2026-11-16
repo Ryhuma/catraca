@@ -1,6 +1,7 @@
 {
   "nome": "espaco-livre-discos",
   "descricao": "Mostra o espaco livre de cada disco local; limitePct mostra so discos com ate N% livre (exemplo do exercicio)",
+  "sinonimos": ["quanto sobrou nos discos", "espaco em disco", "capacidade dos drives"],
   "parametros": { "limitePct": { "padrao": "100" } },
   "passos": [
     {

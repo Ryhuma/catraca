@@ -118,7 +118,7 @@ export const listarReceitas = (P) => (fs.existsSync(P.receitas) ? fs.readdirSync
   const j = lerJson(path.join(P.receitas, f), {});
   const passos = Array.isArray(j.passos) ? j.passos : [];
   const sigs = [...new Set(passos.map((p) => (p.comando ? assinatura(p.comando) : p.arquivo ? `script:${p.arquivo}` : "")).filter(Boolean))];
-  return { arquivo: f, nome: j.nome ?? f.replace(/\.json$/, ""), descricao: j.descricao ?? "", params: Object.keys(j.parametros ?? {}), sigs, naoDuplica: j.naoDuplica ?? null };
+  return { arquivo: f, nome: j.nome ?? f.replace(/\.json$/, ""), descricao: j.descricao ?? "", sinonimos: Array.isArray(j.sinonimos) ? j.sinonimos.join(", ") : "", params: Object.keys(j.parametros ?? {}), sigs, naoDuplica: j.naoDuplica ?? null };
 });
 export const listarScripts = (P) => (fs.existsSync(P.scripts) ? fs.readdirSync(P.scripts) : []);
 export const marcarCatalogo = (P) => gravarJson(P.catalogo, { ts: new Date().toISOString() });
